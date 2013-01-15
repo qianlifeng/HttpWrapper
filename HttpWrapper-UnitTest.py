@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import unittest
-from HttpWrapper import *
+from HttpWrapper import HttpWrapper
 
 class HttpWrapperTestCase(unittest.TestCase):
     def setUp(self):
         self.h = HttpWrapper()
         #proxy info
-        self.h.EnableProxyHandler({'http':'10.182.45.231:80','https':'10.182.45.231:80'})
+        #self.h.EnableProxyHandler({'http':'10.182.45.231:80','https':'10.182.45.231:80'})
         #auto direct 301,302... page
         self.h.EnableAutoRedirectHandler()
         #save cookie info between requests
@@ -24,6 +24,14 @@ class HttpWrapperTestCase(unittest.TestCase):
         #h1 = HttpWrapper()
         #h1的设定应该不和h混淆
 
+    #{{{ proxy test
+
+    def ProxyHandlerTest_NoProxyHandler(self):
+        r = HttpWrapper()
+        res =  r.Request('http://www.baidu.com')
+        print res.content
+
+    #}}}
 
     def PageNotFind(self):
         r = self.h.Request('http://www.cnblogs.com/scottqiantest')
@@ -46,7 +54,7 @@ class HttpWrapperTestCase(unittest.TestCase):
                 '__EVENTVALIDATION' : '/wEWBQLWwpqPDQLyj/OQAgK3jsrkBALR55GJDgKC3IeGDE1m7t2mGlasoP1Hd9hLaFoI2G05'}
         r = self.h.Request('http://passport.cnblogs.com/login.aspx',data)
         assert r.content.decode('utf-8').find(u'用户不存在') > 0
-    
+
     def RefererRequest(self):
         #tell server I'm from baidu.com
         headers = {'referer':'http://www.baidu.com'}
@@ -62,14 +70,26 @@ class HttpWrapperTestCase(unittest.TestCase):
         r = self.h.Request('http://jigsaw.w3.org/HTTP/300/302.html')
         assert r.url == 'http://jigsaw.w3.org/HTTP/300/Overview.html'
 
-def suite():
+    def DownloadImageFile(self):
+        r = self.h.Request('https://secure.gravatar.com/avatar/164e3ba5753e55881a97377850f6e6b7')
+        f = open("image.jpg","wb")
+        f.write(r.content)
+        f.close()
+
+def DefaultSuite():
     suite = unittest.TestSuite()
-    suite.addTest(HttpWrapperTestCase('PageNotFind'))
-    suite.addTest(HttpWrapperTestCase('CorrectRequest'))
-    suite.addTest(HttpWrapperTestCase('PostDataRequest'))
-    suite.addTest(HttpWrapperTestCase('RefererRequest'))
-    suite.addTest(HttpWrapperTestCase('AutoRedirectRequest'))
+    #suite.addTest(HttpWrapperTestCase('PageNotFind'))
+    #suite.addTest(HttpWrapperTestCase('CorrectRequest'))
+    #suite.addTest(HttpWrapperTestCase('PostDataRequest'))
+    #suite.addTest(HttpWrapperTestCase('RefererRequest'))
+    #suite.addTest(HttpWrapperTestCase('AutoRedirectRequest'))
+    suite.addTest(HttpWrapperTestCase('DownloadImageFile'))
+    return suite
+
+def ProxyHandlerSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(HttpWrapperTestCase('ProxyHandlerTest_NoProxyHandler'))
     return suite
 
 if __name__ == '__main__':
-    unittest.main(defaultTest = 'suite')
+    unittest.main(defaultTest = 'ProxyHandlerSuite')

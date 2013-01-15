@@ -3,12 +3,11 @@
 import urllib,urllib2,cookielib,zlib
 from gzip import GzipFile
 from StringIO import StringIO
-import sys
 
 class HttpWrapperException(Exception): pass
 class HttpWrapperResponseData:
     """
-    Response data returned by HttpWrapper.Request 
+    Response data returned by HttpWrapper.Request
     """
     content = None
     url = None
@@ -32,14 +31,13 @@ class HttpWrapper:
   """
 
   def __init__(self):
-    self.opener = urllib2.build_opener(urllib2.HTTPSHandler)
-    urllib2.install_opener(self.opener)
-    
+    self.opener = urllib2.build_opener()
+
   def EnableProxyHandler(self,proxyDict):
     """
     enable proxy handler
     params:
-        proxyDict:proxy info for connect, eg. {'http':'10.182.45.231:80','https':'10.182.45.231:80'} 
+        proxyDict:proxy info for connect, eg. {'http':'10.182.45.231:80','https':'10.182.45.231:80'}
     """
     if proxyDict == None:
         raise HttpWrapperException('you must specify proxyDict when enabled Proxy')
@@ -66,14 +64,14 @@ class HttpWrapper:
 
   class ContentEncodingProcessor(urllib2.BaseHandler):
     """
-    A handler to add gzip capabilities to urllib2 requests 
+    A handler to add gzip capabilities to urllib2 requests
     """
-     
+
     # add headers to requests
     def http_request(self, req):
         req.add_header("Accept-Encoding", "gzip,deflate")
         return req
-     
+
     # decode
     def http_response(self, req, resp):
         old_resp = resp
@@ -88,13 +86,13 @@ class HttpWrapper:
             resp = urllib2.addinfourl(gz, old_resp.headers, old_resp.url, old_resp.code)  # 'class to add info() and
             resp.msg = old_resp.msg
         return resp
-    
+
     def deflate(self,data):   # zlib only provides the zlib compress format, not the deflate format;
       try:               # so on top of all there's this workaround:
         return zlib.decompress(data, -zlib.MAX_WBITS)
       except zlib.error:
         return zlib.decompress(data)
-    
+
   def Request(self,url,data=None,headers={}):
     """
     send a request using specified url
@@ -109,15 +107,14 @@ class HttpWrapper:
     if 'user-agent' not in headers:
         headers['user-agent'] = 'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16'
 
-    if data is not None:
-        req = urllib2.Request(url, urllib.urlencode(data),headers = headers)
-    else:
-        req = urllib2.Request(url,headers = headers)
-
     try:
-        r = urllib2.urlopen(req)
-        resData = HttpWrapperResponseData(r.read(),r.geturl(),r.info().dict,r.getcode())
-        r.close()
+        if data is not None:
+            req = self.opener.open(url,data = urllib.urlencode(data))
+        else:
+            req = self.opener.open(url)
+
+        resData = HttpWrapperResponseData(req.read(),req.geturl(),req.info().dict,req.getcode())
+        req.close()
         return resData
     except urllib2.HTTPError,e:
         return HttpWrapperResponseData(e.fp.read(),'',e.headers,e.code)
@@ -130,4 +127,4 @@ class HttpWrapper:
 if __name__ == '__main__':
     r = HttpWrapper()
     d = r.Request('http://www.baidu.com')
-    print d.content.decode('utf-8')
+    print d.content
