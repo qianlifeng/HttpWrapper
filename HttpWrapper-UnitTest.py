@@ -3,6 +3,7 @@
 import unittest
 from HttpWrapper import HttpWrapper
 
+
 class HttpWrapperTestCase(unittest.TestCase):
     def setUp(self):
         self.h = HttpWrapper()
@@ -28,6 +29,7 @@ class HttpWrapperTestCase(unittest.TestCase):
 
     def ProxyHandlerTest_NoProxyHandler(self):
         r = HttpWrapper()
+        #r.EnableProxyHandler({'http':'10.182.45.231:80','https':'10.182.45.231:80'})
         res =  r.Request('http://www.baidu.com')
         print res.content
 
@@ -70,6 +72,14 @@ class HttpWrapperTestCase(unittest.TestCase):
         r = self.h.Request('http://jigsaw.w3.org/HTTP/300/302.html')
         assert r.url == 'http://jigsaw.w3.org/HTTP/300/Overview.html'
 
+    def AutoRedirectRequest_RemoveHandler(self):
+        self.h.DisableAutoRedirectHandler()
+        print self.h.GetInstalledHandlers()
+        ### XXX still auto redirect, need fix
+        r = self.h.Request('http://jigsaw.w3.org/HTTP/300/302.html')
+        assert r.url == 'http://jigsaw.w3.org/HTTP/300/Overview.html'
+        print r.content
+
     def DownloadImageFile(self):
         r = self.h.Request('https://secure.gravatar.com/avatar/164e3ba5753e55881a97377850f6e6b7')
         f = open("image.jpg","wb")
@@ -83,7 +93,8 @@ def DefaultSuite():
     #suite.addTest(HttpWrapperTestCase('PostDataRequest'))
     #suite.addTest(HttpWrapperTestCase('RefererRequest'))
     #suite.addTest(HttpWrapperTestCase('AutoRedirectRequest'))
-    suite.addTest(HttpWrapperTestCase('DownloadImageFile'))
+    suite.addTest(HttpWrapperTestCase('AutoRedirectRequest_RemoveHandler'))
+    #suite.addTest(HttpWrapperTestCase('DownloadImageFile'))
     return suite
 
 def ProxyHandlerSuite():
@@ -92,4 +103,4 @@ def ProxyHandlerSuite():
     return suite
 
 if __name__ == '__main__':
-    unittest.main(defaultTest = 'ProxyHandlerSuite')
+    unittest.main(defaultTest = 'DefaultSuite')
