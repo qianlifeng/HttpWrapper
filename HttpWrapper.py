@@ -50,6 +50,14 @@ class HttpWrapper:
         if searchedHandlers :
             for i in searchedHandlers:
                 self.__opener.handlers.remove(i)
+                for protocol in self.__opener.handle_error.keys(): #http,https...
+                    handlerDict = self.__opener.handle_error[protocol]
+                    for handlerDictKey in handlerDict: #handlerDict like {302:handler instance}
+                        import pdb; pdb.set_trace() ### XXX BREAKPOINT
+                        if handlerDict.get(handlerDictKey).__class__.__name__ == i.__class__.__name__:
+                            handlerDict.pop(handlerDict.get(handlerDictKey))
+
+
 
     def EnableProxyHandler(self,proxyDict):
         """
@@ -61,11 +69,20 @@ class HttpWrapper:
             raise HttpWrapperException('you must specify proxyDict when enabled Proxy')
         self.__opener.add_handler(urllib2.ProxyHandler(proxyDict))
 
-    def GetInstalledHandlers(self):
+    def ShowInstalledHandlers(self):
         """
         get all installed handler for current opener
         """
-        return [i.__class__.__name__ for i in self.__opener.handlers]
+        print '====================================================='
+        print 'handlers:'
+        print [i.__class__.__name__ for i in self.__opener.handlers]
+        print '====================================================='
+        print '====================================================='
+        print 'error_handlers:'
+        print self.__opener.handle_error
+        print '====================================================='
+        print '====================================================='
+        print '====================================================='
 
     def DisableProxyHandler(self):
         """
@@ -78,14 +95,15 @@ class HttpWrapper:
         enable auto redirect 301,302... pages
         """
         self.__RemoveInstalledHandler('NoRedirectHandler')
-        self.__opener.add_handler(urllib2.HTTPRedirectHandler())
 
     def DisableAutoRedirectHandler(self):
         """
         disable AutoRedirect handler
         """
         self.__RemoveInstalledHandler('HTTPRedirectHandler')
-        self.__opener.add_handler(self.NoRedirectHandler())
+        #import pdb; pdb.set_trace() ### XXX BREAKPOINT
+        #self.__opener.add_handler(self.NoRedirectHandler())
+        #self.__opener = urllib2.build_opener(self.GetInstalledHandlers())
 
     def EnableCookieHandler(self):
         """
@@ -114,7 +132,6 @@ class HttpWrapper:
 
     class NoRedirectHandler(urllib2.HTTPRedirectHandler):
         def http_error_302(self, req, fp, code, msg, headers):
-            import pdb; pdb.set_trace() ### XXX BREAKPOINT
             infourl = urllib.addinfourl(fp, headers, req.get_full_url())
             infourl.status = code
             infourl.code = code
