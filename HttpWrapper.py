@@ -12,25 +12,28 @@ class HttpWrapperResponseData:
     content = None
     url = None
     headers = None
-    #Response http code
-    code = None
+    code = None #Response http code
 
     def __init__(self,content,url,headers,code):
         self.content = content
         self.url = url
-        self.headers
+        self.headers = headers
         self.code = code
 
 
 class HttpWrapper:
     """
-    A wrapper of http Request, integrated with cookie handler and smart referer handler
+    A wrapper of http Request, integrated with cookie handler and content encoding handler
     Usage:
-        HttpWrapper('http://xxx.com',data=dict)
+       h = HttpWrapper()
+       res = h.Request(url)
+       res = h.Request(url,data = dict)
     """
 
     def __init__(self):
         self.__opener = urllib2.build_opener()
+        self.EnableCookieHandler()
+        self.EnableConetntEncodingHandler()
 
     def __FindInstalledHandlers(self,handlerName):
         """
@@ -107,7 +110,7 @@ class HttpWrapper:
         """
         disable proxy handler
         """
-        self.__RemoveInstalledHandler('HTTPProxyHandler')
+        self.__RemoveInstalledHandler('ProxyHandler')
 
     def EnableAutoRedirectHandler(self):
         """
@@ -138,7 +141,7 @@ class HttpWrapper:
         """
         enable content encoding when transmite content, support gzip and deflate
         """
-        self.__opener.add_handler(self.ContentEncodingProcessor())
+        self.__opener.add_handler(self.__ContentEncodingProcessor())
 
     def DisableContentEncodingHandler(self):
         """
@@ -146,24 +149,14 @@ class HttpWrapper:
         """
         self.__RemoveInstalledHandler('ContentEncodingProcessor')
 
-    class NoRedirectHandler(urllib2.HTTPRedirectHandler):
-        def http_error_302(self, req, fp, code, msg, headers):
-            infourl = urllib.addinfourl(fp, headers, req.get_full_url())
-            infourl.status = code
-            infourl.code = code
-            return infourl
-        http_error_300 = http_error_302
-        http_error_301 = http_error_302
-        http_error_303 = http_error_302
-        http_error_307 = http_error_302
-
-    class ContentEncodingProcessor(urllib2.BaseHandler):
+    class __ContentEncodingProcessor(urllib2.BaseHandler):
         """
         A handler to add gzip capabilities to urllib2 requests
         """
 
         # add headers to requests
         def http_request(self, req):
+            import pdb; pdb.set_trace() ### XXX BREAKPOINT
             req.add_header("Accept-Encoding", "gzip,deflate")
             return req
 
