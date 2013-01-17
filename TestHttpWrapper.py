@@ -29,7 +29,7 @@ def setUp():
 
 @raises(urllib2.URLError)
 def Test_ProxyHandler_NoProxyHandler():
-    if os.environ['HTTP_PROXY']:
+    if 'HTTP_PROXY' in os.environ:
         #exist proxy setting
         r = HttpWrapper()
         r.DisableProxyHandler()
@@ -76,11 +76,11 @@ def Test_Request_RemoveAutoRedirectHandler():
     r = h.Request('http://jigsaw.w3.org/HTTP/300/302.html')
     assert r.url != 'http://jigsaw.w3.org/HTTP/300/Overview.html'
 
-def Test_Request_ContentEncoding():
-    h.DisableContentEncodingHandler()
-    h.EnableConetntEncodingHandler()
-    res = h.Request('http://www.baidu.com')
-    assert res.code == 200
+#def Test_Request_ContentEncoding():
+    #h.DisableContentEncodingHandler()
+    #h.EnableConetntEncodingHandler()
+    #res = h.Request('http://www.baidu.com')
+    #assert res.code == 200
 
 def Test_DownloadImageFile():
     r = h.Request('http://www.google.com/images/logo.png')
