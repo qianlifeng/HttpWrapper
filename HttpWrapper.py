@@ -50,13 +50,29 @@ class HttpWrapper:
         if searchedHandlers :
             for i in searchedHandlers:
                 self.__opener.handlers.remove(i)
+
+                #remove handler error handles in dict cache
                 for protocol in self.__opener.handle_error.keys(): #http,https...
                     handlerDict = self.__opener.handle_error[protocol]
-                    for handlerDictKey in handlerDict: #handlerDict like {302:handler instance}
-                        import pdb; pdb.set_trace() ### XXX BREAKPOINT
-                        if handlerDict.get(handlerDictKey).__class__.__name__ == i.__class__.__name__:
-                            handlerDict.pop(handlerDict.get(handlerDictKey))
+                    #handlerDict like {302:[handler 1,handler 2,handler 3],307:[handler 1,handler 2]}
+                    for dictKey in handlerDict:
+                        for item in handlerDict.get(dictKey):
+                            if item == i:
+                                handlerDict.get(dictKey).remove(item)
 
+                #remove handler in dict cache
+                self.__RemoveHandlerInDictList(self.__opener.handle_error,i)
+                self.__RemoveHandlerInDictList(self.__opener.process_request,i)
+                self.__RemoveHandlerInDictList(self.__opener.process_response,i)
+
+
+
+    def __RemoveHandlerInDictList(self,dictList,handlerWantRemove):
+        for protocol in dictList.keys():
+            handlerList = self.__opener.handle_open[protocol]
+            for item in handlerList:
+                if item  == handlerWantRemove:
+                    handlerList.remove(item)
 
 
     def EnableProxyHandler(self,proxyDict):
@@ -73,16 +89,19 @@ class HttpWrapper:
         """
         get all installed handler for current opener
         """
-        print '====================================================='
+        print '\r\n====================================================='
         print 'handlers:'
         print [i.__class__.__name__ for i in self.__opener.handlers]
-        print '====================================================='
         print '====================================================='
         print 'error_handlers:'
         print self.__opener.handle_error
         print '====================================================='
+        print 'process_request:'
+        print self.__opener.process_request
         print '====================================================='
-        print '====================================================='
+        print 'process_response:'
+        print self.__opener.process_response
+        print '=====================================================\r\n'
 
     def DisableProxyHandler(self):
         """
@@ -94,16 +113,13 @@ class HttpWrapper:
         """
         enable auto redirect 301,302... pages
         """
-        self.__RemoveInstalledHandler('NoRedirectHandler')
+        self.__opener.add_handler(urllib2.HTTPRedirectHandler())
 
     def DisableAutoRedirectHandler(self):
         """
         disable AutoRedirect handler
         """
         self.__RemoveInstalledHandler('HTTPRedirectHandler')
-        #import pdb; pdb.set_trace() ### XXX BREAKPOINT
-        #self.__opener.add_handler(self.NoRedirectHandler())
-        #self.__opener = urllib2.build_opener(self.GetInstalledHandlers())
 
     def EnableCookieHandler(self):
         """
