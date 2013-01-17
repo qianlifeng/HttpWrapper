@@ -81,7 +81,6 @@ def Test_Request_ContentEncoding():
     h.EnableConetntEncodingHandler()
     res = h.Request('http://www.baidu.com')
     assert res.code == 200
-    print res.headers
 
 def Test_DownloadImageFile():
     r = h.Request('http://www.google.com/images/logo.png')

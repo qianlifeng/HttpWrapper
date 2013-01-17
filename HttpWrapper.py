@@ -156,7 +156,6 @@ class HttpWrapper:
 
         # add headers to requests
         def http_request(self, req):
-            import pdb; pdb.set_trace() ### XXX BREAKPOINT
             req.add_header("Accept-Encoding", "gzip,deflate")
             return req
 
