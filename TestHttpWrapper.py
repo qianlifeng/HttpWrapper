@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 from HttpWrapper import HttpWrapper
-from nose.tools import raises
+from nose.tools import assert_raises
 import os,urllib2
 
 h = HttpWrapper()
@@ -27,13 +27,13 @@ def setUp():
     pass
 
 
-@raises(urllib2.URLError)
 def Test_ProxyHandler_NoProxyHandler():
     if 'HTTP_PROXY' in os.environ:
         #exist proxy setting
         r = HttpWrapper()
         r.DisableProxyHandler()
-        r.Request('http://www.baidu.com')
+        with assert_raises(urllib2.URLError):
+            r.Request('http://www.baidu.com')
     else:
         print 'no proxy detected,skip proxy test...'
 
