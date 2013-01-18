@@ -19,8 +19,6 @@ class HttpWrapperResponseData:
         self.url = url
         self.headers = headers
         self.code = code
-
-
 class HttpWrapper:
     """
     A wrapper of http Request, integrated with cookie handler and content encoding handler
@@ -68,15 +66,12 @@ class HttpWrapper:
                 self.__RemoveHandlerInDictList(self.__opener.process_request,i)
                 self.__RemoveHandlerInDictList(self.__opener.process_response,i)
 
-
-
     def __RemoveHandlerInDictList(self,dictList,handlerWantRemove):
         for protocol in dictList.keys():
             handlerList = self.__opener.handle_open[protocol]
             for item in handlerList:
                 if item  == handlerWantRemove:
                     handlerList.remove(item)
-
 
     def EnableProxyHandler(self,proxyDict):
         """
@@ -180,6 +175,7 @@ class HttpWrapper:
             except zlib.error:
                 return zlib.decompress(data)
 
+
     def Request(self,url,data=None,headers={}):
         """
         send a request using specified url
@@ -211,6 +207,21 @@ class HttpWrapper:
             #print e.headers
             #print e.fp.read()
             #print u"error happended:\r\n Location: HttpWrapper.__SendRequest \r\n Error Information:",  sys.exc_info()[1]
+
+    def RequestHeader(self,url,data=None,headers={}):
+        """
+        Only Request header of the url, we can use this test if a url is accessable
+        params:
+            url     : url you want to send
+            data    : additional post data
+            headers : headers you want to attach, eg. {'referer' : 'http : //www.baiud.com'}
+        """
+        request = urllib2.Request(url,data=data,headers=headers)
+        request.get_method = lambda : 'HEAD'
+        req = urllib2.urlopen(request)
+        resData = HttpWrapperResponseData(req.read(),req.geturl(),req.info().dict,req.getcode())
+        return resData
+
 
 if __name__ == '__main__':
     r = HttpWrapper()

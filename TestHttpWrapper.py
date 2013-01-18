@@ -76,11 +76,16 @@ def Test_Request_RemoveAutoRedirectHandler():
     r = h.Request('http://jigsaw.w3.org/HTTP/300/302.html')
     assert r.url != 'http://jigsaw.w3.org/HTTP/300/Overview.html'
 
-#def Test_Request_ContentEncoding():
-    #h.DisableContentEncodingHandler()
-    #h.EnableConetntEncodingHandler()
-    #res = h.Request('http://www.baidu.com')
-    #assert res.code == 200
+def Test_Request_ContentEncoding():
+    h.DisableContentEncodingHandler()
+    h.EnableConetntEncodingHandler()
+    res = h.Request('http://www.baidu.com')
+    assert res.code == 200
+
+def Test_Request_RequestHead():
+    res = h.RequestHeader('http://www.baidu.com')
+    assert res.code == 200
+    assert res.content == ''
 
 def Test_DownloadImageFile():
     r = h.Request('http://www.google.com/images/logo.png')
